@@ -1,0 +1,562 @@
+---
+title: "ufc"
+output: html_document
+date: "2023-04-29"
+---
+
+
+
+```{r}
+
+library(ggplot2)
+library(binom)
+
+```
+
+
+```{r}
+df = read.csv("ufc_good_data.csv")
+
+
+df = df[df$date < as.Date("2014-01-01"),] # datafarme to use if you want to compare since 2014
+```
+
+
+```{r}
+# Grappler vs. Striker
+
+indices1 <- which(df$R_style == 2 & df$B_style == 0, arr.ind = TRUE)
+
+indices1
+
+indices2 <- which(df$R_style == 0 & df$B_style == 2, arr.ind = TRUE)
+
+indices1
+indices2
+ind = c(indices1, indices2)
+
+grapstrike = df[ind,]
+
+head(grapstrike)
+
+```
+
+
+
+```{r}
+
+# Grappler vs. Striker hypothesis test
+
+grapstrike
+
+binom_test = binom.test(sum(grapstrike$Winner2)/2, length(grapstrike$Winner2), p = 0.5)
+binom_confint = binom.confint(sum(grapstrike$Winner2)/2, length(grapstrike$Winner2), conf.level = 0.95, methods = "ac")
+
+binom_test
+binom_confint
+
+```
+
+```{R}
+
+
+ggplot(data = grapstrike, aes(x = Winner2))+
+  geom_bar(position = "identity", fill = "steelblue") +
+  scale_x_continuous(
+    breaks = c(0, 2), 
+    labels = c("Grappler", "Striker")
+  ) +
+  xlab("Fighter Type") +
+  ylab("Number of Wins") +
+  ggtitle("Histogram of UFC Wins by Fighting Type")
+
+```
+
+
+```{r}
+
+
+
+
+ggplot(data = grapstrike, aes(x = Winner2, y = ..density..))+
+  geom_histogram(fill = "steelblue") +
+  xlab("Fighter Type") +
+  ylab("Number of Wins") +
+  ggtitle("Histogram of UFC Wins by Fighting Type")
+
+
+
+```
+
+
+
+
+```{r}
+
+# Striker vs. All-rounder
+
+
+indices1 <- which(df$R_style == 2 & df$B_style == 1, arr.ind = TRUE)
+
+
+indices2 <- which(df$R_style == 1 & df$B_style == 2, arr.ind = TRUE)
+
+
+
+ind = c(indices1, indices2)
+
+
+
+grapround = df[ind,]
+
+head(grapround)
+
+grapround$Winner2[grapround$Winner2 == 2] = 0
+
+
+
+binom_test = binom.test(sum(grapround$Winner2), length(grapround$Winner2), p = 0.5)
+binom_confint = binom.confint(sum(grapround$Winner2), length(grapround$Winner2), conf.level = 0.95, methods = "ac")
+
+binom_test
+binom_confint
+
+```
+
+
+
+```{R}
+
+
+ggplot(data = grapround, aes(x = Winner2))+
+  geom_bar(position = "identity", fill = "steelblue") +
+  scale_x_continuous(
+    breaks = c(0, 1), 
+    labels = c("Striker", "All-Arounder")
+  ) +
+  xlab("Fighter Type") +
+  ylab("Number of Wins") +
+  ggtitle("Histogram of UFC Wins by Fighting Type")
+
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+```{r}
+
+# Grappler vs. All-rounder
+
+
+indices1 <- which(df$R_style == 0 & df$B_style == 1, arr.ind = TRUE)
+
+
+indices2 <- which(df$R_style == 1 & df$B_style == 0, arr.ind = TRUE)
+
+
+
+
+ind = c(indices1, indices2)
+
+strikround = df[ind,]
+
+head(strikround)
+
+
+
+
+binom_test = binom.test(sum(strikround$Winner2), length(strikround$Winner2), p = 0.5)
+binom_confint = binom.confint(sum(strikround$Winner2), length(strikround$Winner2), conf.level = 0.95, methods = "ac")
+
+binom_test
+binom_confint
+
+```
+
+
+
+```{R}
+
+
+ggplot(data = strikround, aes(x = Winner2))+
+  geom_bar(position = "identity", fill = "steelblue") +
+  scale_x_continuous(
+    breaks = c(0, 1), 
+    labels = c("Grappler", "All-Arounder")
+  ) +
+  xlab("Fighter Type") +
+  ylab("Number of Wins") +
+  ggtitle("Histogram of UFC Wins by Fighting Type")
+
+
+
+```
+
+```{r}
+
+head(names)
+
+names = read.csv("ufc_names3.csv")
+
+
+ggplot(data = names, aes(x = style))+
+  geom_bar(position = "identity", fill = "steelblue") +
+  scale_x_continuous(
+    breaks = c(0,1,2), 
+    labels = c("Striker", "All-Arounder", "Grappler")
+  ) +
+  xlab("Fighter Type") +
+  ylab("Number of Fighters") +
+  ggtitle("Histogram of UFC Fighters by Fighting Type")
+
+
+```
+
+
+
+
+
+```{r}
+
+
+
+df = read.csv("ufc_names3.csv")
+
+
+ggplot(data = df)+
+  geom_point(aes(x = avg_SUB_ATT, y = avg_SIG_STR_att, color = factor(style)))+
+  
+  scale_color_discrete(name = "Style", labels = c("Grappler","All-Rounder","Striker"))+
+  xlab("Average Takedown Attempts")+
+  ylab("Average Significant Strike Attempts")+
+  ggtitle("UFC Scatter Plot of Significant Strike Attempts vs. Takedown Attempts")
+
+```
+
+
+```{r}
+
+ggplot(data = df)+
+  geom_point(aes(x = avg_TD_att, y = avg_SUB_ATT, color = factor(style)))+
+  scale_color_discrete(name = "Style", labels = c("Grappler","All-Rounder","Striker"))+
+  xlab("Average Takedown Attempts")+
+  ylab("Average Submission Attempts")+
+  ggtitle("UFC Scatter Plot of Significant Strike Attempts vs. Takedown Attempts")
+
+
+
+```
+
+
+
+```{r}
+
+
+
+# Grapplers vs. Strikers
+
+df = read.csv("ufc_good_data.csv")
+df = df[df$date > as.Date("2014-01-01"),]
+
+
+indices1 <- which(df$R_style == 2 & df$B_style == 0, arr.ind = TRUE)
+
+
+
+
+grapstrike = df[indices1,]
+
+
+p1_strike_grap = sum(grapstrike$R_odds > grapstrike$B_odds)
+
+length1 = length(indices1)
+strik_odds1 = mean(df$R_odds)
+grap_odds1 = mean(df$B_odds)
+
+indices2 <- which(df$R_style == 0 & df$B_style == 2, arr.ind = TRUE)
+
+
+grapstrike = df[indices2,]
+
+
+
+p2_strike_grap = sum(grapstrike$B_odds > grapstrike$R_odds)
+
+
+strike_win_count = p2_strike_grap + p1_strike_grap
+
+grap_win_count = strike_win_count - total_length
+
+
+
+
+
+
+
+length2 = length(indices2)
+strik_odds2 = mean(df$B_odds)
+grap_odds2 = mean(df$R_odds)
+
+
+total_length = (length1 + length2)
+
+
+strike_win_count = p2_strike_grap + p1_strike_grap
+
+grap_win_count = total_length -  strike_win_count 
+
+grap_odds_against_strikers = ((length1/total_length) * grap_odds1 + (length2/total_length) * grap_odds2)
+
+striker_odds_against_grap = ((length1/total_length) * strik_odds1 + (length2/total_length) * strik_odds2)
+
+
+
+grap_odds_against_strikers = round(grap_odds_against_strikers, 4)
+
+
+striker_odds_against_grap = round(striker_odds_against_grap, 4)
+
+values = c(grap_win_count,strike_win_count)
+
+
+
+barplot(values, names.arg = c("Grappler", "Striker "), col = "blue", main = "Projected Wins of Grapplers vs. Strikers by Sports Books",
+        ylab = "Projected Number of Wins", ylim = c(0,total_length))
+
+text(x = 1:length(values), y = values, labels = values, pos = 3)
+
+
+
+
+
+
+
+```
+
+
+
+
+```{r}
+
+
+
+
+
+# Grapplers vs. All-Arounders
+
+
+df = read.csv("ufc_good_data.csv")
+
+df = df[df$date > as.Date("2014-01-01"),]
+
+indices1 <- which(df$R_style == 1 & df$B_style == 0, arr.ind = TRUE)
+
+
+
+
+grapstrike = df[indices1,]
+
+
+p1_strike_grap = sum(grapstrike$R_odds > grapstrike$B_odds)
+
+length1 = length(indices1)
+strik_odds1 = mean(df$R_odds)
+grap_odds1 = mean(df$B_odds)
+
+indices2 <- which(df$R_style == 0 & df$B_style == 1, arr.ind = TRUE)
+
+
+grapstrike = df[indices2,]
+
+
+
+p2_strike_grap = sum(grapstrike$B_odds > grapstrike$R_odds)
+
+
+strike_win_count = p2_strike_grap + p1_strike_grap
+
+grap_win_count = strike_win_count - total_length
+
+
+
+
+
+
+
+length2 = length(indices2)
+strik_odds2 = mean(df$B_odds)
+grap_odds2 = mean(df$R_odds)
+
+
+total_length = (length1 + length2)
+
+
+strike_win_count = p2_strike_grap + p1_strike_grap
+
+grap_win_count = total_length -  strike_win_count 
+
+grap_odds_against_strikers = ((length1/total_length) * grap_odds1 + (length2/total_length) * grap_odds2)
+
+striker_odds_against_grap = ((length1/total_length) * strik_odds1 + (length2/total_length) * strik_odds2)
+
+
+
+grap_odds_against_strikers = round(grap_odds_against_strikers, 4)
+
+
+striker_odds_against_grap = round(striker_odds_against_grap, 4)
+
+values = c(grap_win_count,strike_win_count)
+
+
+
+values = c(grap_win_count,strike_win_count)
+barplot(values, names.arg = c("Grappler", "All-arounder"), col = "blue", main = "Projected Wins of Grapplers vs. All-Arounder by Sports Books",
+        ylab = "Projected Number of Wins", ylim = c(0,total_length))
+
+text(x = 1:length(values), y = values, labels = values, pos = 3)
+
+
+
+
+
+
+
+```
+
+
+
+
+```{r}
+
+
+
+
+# Grapplers vs. All-Arounders
+
+
+df = read.csv("ufc_good_data.csv")
+df = df[df$date > as.Date("2014-01-01"),]
+
+
+indices1 <- which(df$R_style == 1 & df$B_style == 2, arr.ind = TRUE)
+
+
+
+
+grapstrike = df[indices1,]
+
+
+p1_strike_grap = sum(grapstrike$R_odds > grapstrike$B_odds)
+
+length1 = length(indices1)
+strik_odds1 = mean(df$R_odds)
+grap_odds1 = mean(df$B_odds)
+
+indices2 <- which(df$R_style == 2 & df$B_style == 1, arr.ind = TRUE)
+
+
+grapstrike = df[indices2,]
+
+
+
+p2_strike_grap = sum(grapstrike$B_odds > grapstrike$R_odds)
+
+
+strike_win_count = p2_strike_grap + p1_strike_grap
+
+grap_win_count = strike_win_count - total_length
+
+
+
+
+
+
+
+length2 = length(indices2)
+strik_odds2 = mean(df$B_odds)
+grap_odds2 = mean(df$R_odds)
+
+
+total_length = (length1 + length2)
+
+
+strike_win_count = p2_strike_grap + p1_strike_grap
+
+grap_win_count = total_length -  strike_win_count 
+
+grap_odds_against_strikers = ((length1/total_length) * grap_odds1 + (length2/total_length) * grap_odds2)
+
+striker_odds_against_grap = ((length1/total_length) * strik_odds1 + (length2/total_length) * strik_odds2)
+
+
+
+grap_odds_against_strikers = round(grap_odds_against_strikers, 4)
+
+
+striker_odds_against_grap = round(striker_odds_against_grap, 4)
+
+values = c(grap_win_count,strike_win_count)
+
+
+
+values = c(grap_win_count,strike_win_count)
+barplot(values, names.arg = c("Striker", "All-arounder"), col = "blue", main = "Projected Wins of Strikers vs. All-Arounder by Sports Books",
+        ylab = "Projected Number of Wins", ylim = c(0,total_length))
+
+text(x = 1:length(values), y = values, labels = values, pos = 3)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
